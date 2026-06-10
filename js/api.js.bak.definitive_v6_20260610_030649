@@ -1,0 +1,27 @@
+const API_BASE = "https://api.dreamfooter.com";
+
+async function dfFetch(path) {
+  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+  const res = await fetch(url, { headers: { "Accept": "application/json" } });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return await res.json();
+}
+
+const apiGet = dfFetch;
+
+function esc(v) {
+  return String(v ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function flagOrLogo(team) {
+  if (team.logo_url) return `<img class="df-flag" src="${esc(team.logo_url)}" alt="">`;
+  return `<span class="df-flag-emoji">${esc(team.flag || "")}</span>`;
+}
+
+window.API_BASE = API_BASE;
+window.dfFetch = dfFetch;
+window.apiGet = apiGet;
+window.esc = esc;
+window.flagOrLogo = flagOrLogo;

@@ -1,0 +1,4 @@
+const box=document.getElementById('teams'), q=document.getElementById('q');let timer;
+const sid=new URLSearchParams(location.search).get('season_id');
+async function load(){ const term=q.value.trim(); const p=new URLSearchParams(); if(term)p.set('q',term); if(sid)p.set('season_id',sid); const data=await dfFetch(`/api/public/teams${p.toString()?`?${p}`:''}`); box.innerHTML=(data.data||[]).map(t=>`<a class="team-card" href="/team.html?id=${t.sportmonks_team_id||t.id}${data.season_id?`&season_id=${data.season_id}`:''}"><div class="flex items-center gap-4"><div class="crest">${logo(t.logo_url,t.name)}</div><div><h2 class="text-lg font-black">${esc(t.name)}</h2><p class="muted text-sm">${t.tournament_rank?`Rank #${t.tournament_rank}`:(t.reached_stage||t.short_code||'')}</p></div></div></a>`).join('')||'<div class="panel muted">No teams found.</div>';}
+q.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(load,250)});load().catch(console.error);

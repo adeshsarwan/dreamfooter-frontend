@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>DreamFooter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white">
+  <main class="min-h-screen p-8">
+    <h1 class="text-4xl font-black text-amber-400">DreamFooter</h1>
+    <p class="mt-3 text-slate-300">World Cup history, teams, fixtures and collectible cards.</p>
+
+    <section class="mt-8">
+      <h2 class="text-xl font-bold">API Test</h2>
+      <pre id="out" class="mt-4 bg-slate-900 p-4 rounded-xl overflow-auto text-sm"></pre>
+    </section>
+  </main>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
