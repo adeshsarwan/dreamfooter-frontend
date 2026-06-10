@@ -1,4 +1,5 @@
-const HOME_API_BASE = window.API_BASE || ""; // same-origin API proxy
+
+const HOME_API_BASE = window.API_BASE || "https://api.dreamfooter.com";
 let homeData = null;
 let selectedPrediction = null;
 

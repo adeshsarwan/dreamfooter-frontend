@@ -1,0 +1,11 @@
+
+.team-lineup-panel { margin-top: 24px; }
+.lineup-grid { display:grid; grid-template-columns: 1.3fr .7fr .9fr; gap:16px; }
+.pitch { min-height:520px; border-radius:22px; position:relative; overflow:hidden; }
+.lineup-player { position:absolute; transform:translate(-50%, -50%); text-align:center; }
+.lineup-shirt { width:58px; height:68px; border-radius:12px; background:#e42b34; display:grid; place-items:center; font-weight:900; }
+.lineup-name { margin-top:6px; padding:4px 8px; border-radius:8px; background:#070b18; font-weight:800; }
+.pos-badge { display:inline-block; margin-top:4px; padding:3px 8px; border-radius:7px; font-size:12px; font-weight:900; background:#2563eb; }
+.sub-row { display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:12px; background:rgba(255,255,255,.06); margin-bottom:8px; }
+
+@media(max-width:1100px){ .lineup-grid{grid-template-columns:1fr;} }

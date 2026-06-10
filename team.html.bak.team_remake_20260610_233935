@@ -8,11 +8,10 @@
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/app.css">
   <link rel="stylesheet" href="/css/pages.css">
-  <link rel="stylesheet" href="/css/team.css">
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100">
   <div class="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.20),transparent_32%),radial-gradient(circle_at_80%_20%,rgba(34,197,94,0.11),transparent_28%)]"></div>
-  <main class="page-shell relative team-page-shell">
+  <main class="page-shell relative">
     <header class="df-header">
       <a class="brand" href="/">
         <div class="brand-icon">🏆</div>
@@ -25,15 +24,16 @@
         <a href="/">Home</a>
         <a href="/schedule.html">Schedule</a>
         <a href="/groups.html">Groups</a>
-        <a class="active" href="/teams.html">Teams</a>
+        <a href="/teams.html" class="active">Teams</a>
         <a href="/players.html">Players</a>
         <a href="/worldcups.html">World Cups</a>
-        
-        
+        <a href="/live.html">Live</a>
+        <a href="/predictions.html">Predictions</a>
+        <a href="/fantasy.html">Fantasy Squad</a>
       </nav>
     </header>
 
-    <section id="teamHero" class="team-hero-dashboard"></section>
+    <section id="teamHero" class="team-page-hero hero-card"></section>
 
     <section class="team-season-layout current-season">
       <article class="panel team-lineup-panel">
@@ -49,30 +49,26 @@
         <div id="subsList" class="squad-mini-list"></div>
       </article>
 
-      <article class="panel team-standouts-panel">
+      <article class="panel team-standout-panel">
         <h2>Standout Players</h2>
         <div id="standoutPlayers" class="standout-list"></div>
-        <a id="viewPlayersLink" class="team-view-link" href="/players.html">View all players →</a>
       </article>
     </section>
 
-    <section class="panel team-matches-panel">
-      <h2>Matches</h2>
-      <div id="fixtures" class="team-match-list"></div>
+    <section class="panel mt-4">
+      <h2 class="text-xl font-black">Matches</h2>
+      <div id="fixtures" class="team-match-list mt-3"></div>
     </section>
 
-    <section class="panel team-history-panel">
-      <div class="team-panel-head">
-        <h2>World Cup History</h2>
-        <span class="muted text-sm">Click a year to load that tournament squad and results.</span>
-      </div>
-      <div id="historyCards" class="history-card-strip"></div>
+    <section class="panel mt-4">
+      <h2 class="text-xl font-black">World Cup History</h2>
+      <div id="historyCards" class="history-card-row mt-3"></div>
     </section>
 
-    <section id="historyDetail" class="team-history-detail"></section>
-
-    <script src="/js/api.js"></script>
-    <script src="/js/team.js"></script>
+    <div id="historyDetail" class="mt-4"></div>
   </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/team.js"></script>
 </body>
 </html>
