@@ -35,13 +35,70 @@ function renderMiniGroups(rows){
   if(!groups.length) return '';
   return `<div class="bracket-groups">${groups.map(([g,teams])=>`<div class="bracket-group-card"><b>${esc(g)}</b>${[...teams.values()].slice(0,4).map(t=>`<span>${t.logo?`<img src="${esc(t.logo)}" alt="">`:''}${esc(t.name)}</span>`).join('')}</div>`).join('')}</div>`;
 }
+function splitRound(fixtures, perSide){
+  const sorted = [...(fixtures||[])].sort((a,b)=>String(a.starting_at||'').localeCompare(String(b.starting_at||'')) || Number(a.sportmonks_fixture_id||0)-Number(b.sportmonks_fixture_id||0));
+  const half = perSide || Math.ceil(sorted.length/2);
+  return { left: sorted.slice(0, half), right: sorted.slice(half) };
+}
+function matchCard(f, side='left', round=''){
+  return `<article class="bracket2-match ${side==='left'?'to-right':'to-left'}">
+    <div class="bracket2-time">${fmtDate(f.starting_at)} · ${fmtTime(f.starting_at)}</div>
+    <div class="bracket2-teams"><div>${teamBadge(f.home_team,f.home_logo)}</div><strong>${esc(scoreLabel(f))}</strong><div>${teamBadge(f.away_team,f.away_logo)}</div></div>
+    <div class="bracket2-meta"><span>${esc(venueLabel(f))}</span><span>${esc(f.stage_name || round)}</span></div>
+  </article>`;
+}
+function emptyCard(label, side='left'){
+  return `<article class="bracket2-match bracket2-empty ${side==='left'?'to-right':'to-left'}">
+    <div class="bracket2-time">${esc(label)}</div>
+    <div class="bracket2-teams"><div><span>TBD</span></div><strong>0 - 0</strong><div><span>TBD</span></div></div>
+    <div class="bracket2-meta"><span>Venue TBA</span><span>${esc(label)}</span></div>
+  </article>`;
+}
+function renderGroupColumn(rows, wanted){
+  const groupMap = {};
+  rows.filter(f=>f.group_name).forEach(f=>{
+    const g = f.group_name;
+    groupMap[g] ||= new Map();
+    if(f.home_team) groupMap[g].set(f.home_team, {name:f.home_team, logo:f.home_logo});
+    if(f.away_team) groupMap[g].set(f.away_team, {name:f.away_team, logo:f.away_logo});
+  });
+  const names = wanted.filter(g=>groupMap[g]).concat(Object.keys(groupMap).filter(g=>!wanted.includes(g))).slice(0,4);
+  return `<div class="bracket2-groups">${names.map(g=>`<div class="bracket2-group"><b>${esc(g)}</b>${[...groupMap[g].values()].slice(0,4).map(t=>`<span>${t.logo?`<img src="${esc(t.logo)}" alt="">`:''}${esc(t.name)}</span>`).join('')}</div>`).join('')}</div>`;
+}
+function renderRoundColumn(title, fixtures, side, expected){
+  const items = [...(fixtures||[])];
+  while(items.length < expected) items.push(null);
+  return `<div class="bracket2-round ${side}"><h3>${esc(title)}</h3>${items.slice(0,expected).map(f=>f?matchCard(f,side,title):emptyCard(title,side)).join('')}</div>`;
+}
+function renderFinalColumn(finals, thirds){
+  const final = (finals||[]).find(f=>/final/i.test(roundName(f)) && !/3rd|third/i.test(roundName(f))) || (finals||[])[0];
+  const third = (thirds||[])[0];
+  return `<div class="bracket2-center"><div class="champion-box big">Champion</div><h3>Final</h3>${final?matchCard(final,'center','Final'):emptyCard('Final','center')}<h3>3rd Place</h3>${third?matchCard(third,'center','3rd Place Final'):emptyCard('3rd Place Final','center')}</div>`;
+}
 function renderBracket(rows){
   const knockouts = rows.filter(isKnockout);
   if(!knockouts.length) return '';
   const byRound = {};
   knockouts.forEach(f=>{ const r=roundName(f); (byRound[r] ||= []).push(f); });
-  const rounds = knockoutOrder.filter(r => byRound[r]?.length).concat(Object.keys(byRound).filter(r=>!knockoutOrder.includes(r)));
-  return `<section class="panel knockout-panel"><div class="ko-head"><div><span class="pill">Knockout Flow</span><h2>Road to the Champion</h2><p>From Round of 32 onwards, fixtures fill in as teams progress. Each card shows kickoff, stadium and score.</p></div><div class="champion-box">Champion</div></div><div class="bracket-board"><div class="bracket-side bracket-left">${renderMiniGroups(rows)}</div><div class="bracket-scroll">${rounds.map((round,idx)=>`<div class="bracket-round"><h3>${esc(round)}</h3>${(byRound[round]||[]).map((f,i)=>`<article class="bracket-match ${idx<rounds.length-1?'connect-right':''}"><div class="bracket-time">${fmtDate(f.starting_at)} · ${fmtTime(f.starting_at)}</div><div class="bracket-teams"><div>${teamBadge(f.home_team,f.home_logo)}</div><strong>${esc(scoreLabel(f))}</strong><div>${teamBadge(f.away_team,f.away_logo)}</div></div><div class="bracket-meta"><span>${esc(venueLabel(f))}</span><span>${esc(f.stage_name || round)}</span></div></article>`).join('')}</div>`).join('')}</div></div></section>`;
+  const r32 = splitRound(byRound['Round of 32'] || [], 8);
+  const r16 = splitRound(byRound['Round of 16'] || [], 4);
+  const qf = splitRound(byRound['Quarter-finals'] || [], 2);
+  const sf = splitRound(byRound['Semi-finals'] || [], 1);
+  const leftGroups = ['Group A','Group C','Group E','Group G'];
+  const rightGroups = ['Group B','Group D','Group F','Group H'];
+  return `<section class="panel knockout-panel knockout-bottom"><div class="ko-head"><div><span class="pill">Knockout Flow</span><h2>Road to the Champion</h2><p>From Round of 32 onwards, the left and right sides progress toward the Final. Teams will fill in as group rankings are confirmed. Each card shows kickoff, stadium and score.</p></div></div><div class="bracket2-board">
+    ${renderGroupColumn(rows,leftGroups)}
+    ${renderRoundColumn('Round of 32', r32.left, 'left', 8)}
+    ${renderRoundColumn('Round of 16', r16.left, 'left', 4)}
+    ${renderRoundColumn('Quarter-finals', qf.left, 'left', 2)}
+    ${renderRoundColumn('Semi-finals', sf.left, 'left', 1)}
+    ${renderFinalColumn(byRound['Final']||[], byRound['3rd Place Final']||[])}
+    ${renderRoundColumn('Semi-finals', sf.right, 'right', 1)}
+    ${renderRoundColumn('Quarter-finals', qf.right, 'right', 2)}
+    ${renderRoundColumn('Round of 16', r16.right, 'right', 4)}
+    ${renderRoundColumn('Round of 32', r32.right, 'right', 8)}
+    ${renderGroupColumn(rows,rightGroups)}
+  </div></section>`;
 }
 function renderSchedule() {
   const stage = stageFilter.value, group = groupFilter.value;
@@ -51,7 +108,7 @@ function renderSchedule() {
   rows.forEach(r => { const k = fmtDate(r.starting_at); (byDate[k] ||= []).push(r); });
   const bracket = (!stage || /round|quarter|semi|final/i.test(stage)) && !group ? renderBracket(scheduleData?.data || []) : '';
   const dateList = Object.entries(byDate).map(([date, fixtures]) => `<div class="mt-5"><h2 class="mb-2 text-lg font-black text-white">${date}</h2>${fixtures.map(f => `<a class="fixture-row" href="/fixture.html?id=${f.sportmonks_fixture_id}"><div><b>${esc(stageLabel(f))}</b><br><span class="muted">${esc(f.stage_name || f.round_name || 'Group Stage')}</span></div><div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3"><span class="text-right font-black">${f.home_logo?`<img class="inline h-6 w-6 object-contain mr-2" src="${esc(f.home_logo)}">`:''}${esc(f.home_team || 'TBD')}</span><span class="pill">${esc(scoreLabel(f))}</span><span class="font-black">${f.away_logo?`<img class="inline h-6 w-6 object-contain mr-2" src="${esc(f.away_logo)}">`:''}${esc(f.away_team || 'TBD')}</span></div><div class="text-right"><b>${esc(venueLabel(f))}</b><br><span class="muted">${fmtTime(f.starting_at)}</span></div></a>`).join('')}</div>`).join('');
-  list.innerHTML = `${bracket}${dateList}`;
+  list.innerHTML = `${dateList}${bracket}`;
 }
 async function boot(){
   const qs = seasonId ? `?season_id=${encodeURIComponent(seasonId)}` : '';
