@@ -140,7 +140,7 @@ function renderStandouts(data) {
 }
 
 function matchRow(f) {
-  const score = `${f.home_score ?? 0} - ${f.away_score ?? 0}`;
+  const score = `${f.display_home_score ?? f.ft_home_score ?? f.home_score ?? 0} - ${f.display_away_score ?? f.ft_away_score ?? f.away_score ?? 0}`;
   return `<a class="team-match-row" href="/fixture.html?id=${f.sportmonks_fixture_id}"><div class="when"><span>${fmtDate(f.starting_at)}</span><b>${fmtTime(f.starting_at)}</b></div><div class="side right"><span>${esc(f.home_team || 'TBD')}</span>${f.home_logo ? `<img src="${esc(f.home_logo)}" alt="">` : ''}</div><div class="vs">vs</div><div class="side">${f.away_logo ? `<img src="${esc(f.away_logo)}" alt="">` : ''}<span>${esc(f.away_team || 'TBD')}</span></div><div class="stage">${esc(f.round_name || f.stage_name || f.group_name || '')}</div><div class="score">${esc(score)}</div></a>`;
 }
 
@@ -192,7 +192,10 @@ async function loadTeam() {
   const selected = data.selected_history || (data.world_cups || []).find(x => String(x.season_id) === String(currentSeason));
   const isCurrent = String((data.edition || {}).sportmonks_season_id || '') === String(currentSeason || '');
   document.title = `${t.name || 'Team'} | DreamFooter`;
-  teamHero.innerHTML = `<div class="team-hero-main"><div class="crest hero-crest">${logo(t.logo_url, t.name)}</div><div><div class="pill ${isCurrent ? 'live-pill' : ''}">${esc(yearLabel(selected, isCurrent))}</div><h1 class="title mt-3">${esc(t.name)}</h1><p class="team-subtitle">FIFA World Cup ${esc(selected?.year || (data.edition || {}).year || '')}</p></div></div><div class="team-quick-stats"><div><span>Group</span><b>${esc((data.standing || {}).group_name || '—')}</b></div><div><span>Rank</span><b>${esc((data.standing || {}).position ? `#${(data.standing || {}).position}` : ((selected || {}).final_rank ? `#${selected.final_rank}` : '—'))}</b></div><div><span>Record</span><b>${esc(`${(selected || data.standing || {}).won ?? 0}-${(selected || data.standing || {}).drawn ?? 0}-${(selected || data.standing || {}).lost ?? 0}`)}</b></div></div>`;
+  const heroGroup = (data.standing || {}).group_name || (selected || {}).group_name || '—';
+  const heroRank = (data.standing || {}).position ? `Group #${(data.standing || {}).position}` : ((selected || {}).final_rank ? `Tournament #${selected.final_rank}` : ((selected || {}).reached_stage || '—'));
+  const recordSource = selected || data.standing || {};
+  teamHero.innerHTML = `<div class="team-hero-main"><div class="crest hero-crest">${logo(t.logo_url, t.name)}</div><div><div class="pill ${isCurrent ? 'live-pill' : ''}">${esc(yearLabel(selected, isCurrent))}</div><h1 class="title mt-3">${esc(t.name)}</h1><p class="team-subtitle">FIFA World Cup ${esc(selected?.year || (data.edition || {}).year || '')}</p></div></div><div class="team-quick-stats"><div><span>Group</span><b>${esc(heroGroup)}</b></div><div><span>Rank</span><b>${esc(heroRank)}</b></div><div><span>Record</span><b>${esc(`${recordSource.won ?? 0}-${recordSource.drawn ?? 0}-${recordSource.lost ?? 0}`)}</b></div></div>`;
 
   const { starters, subs } = pickLineup(data.squad_players || data.top_players || []);
   formationPill.textContent = '4-3-3';
